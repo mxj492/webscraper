@@ -1,14 +1,14 @@
+
 var express = require("express");
 var exphbs = require("express-handlebars");
 var bodyParser = require("body-parser");
 var mongoose = require("mongoose");
 var path = require("path");
-
+var methodOverride = require('method-override')
 
 
 var Note = require("./models/note.js");
 var Article = require("./models/article.js");
-
 var axios = require("axios");
 var cheerio = require("cheerio");
 
@@ -28,6 +28,9 @@ app.use(bodyParser.urlencoded({
 app.use(express.static(path.join(__dirname, '/public')));
 
 
+app.use(methodOverride('_method'))
+
+
 app.engine('handlebars', exphbs({
     defaultLayout: 'main'
 }));
@@ -36,6 +39,7 @@ app.set('view engine', 'handlebars');
 
 mongoose.connect("mongodb://user:password1@ds061621.mlab.com:61621/heroku_fq0647rf", { useNewUrlParser: true })
 var db = mongoose.connection;
+
 
 
 db.on("error", function(error) {
@@ -66,7 +70,7 @@ app.get("/scrape", function(req, res) {
             
             result.title = $(this).children("a").text()
             result.link = $(this).children("a").attr("href")
-           
+            
             var checkRootLink = result.link.startsWith("/")
             if (checkRootLink) {
               result.link = "https://craigslist.org" + result.link
@@ -75,13 +79,13 @@ app.get("/scrape", function(req, res) {
             var entry = new Article(result);
             
             entry.save(function(err, doc) {
-              
+                
                 if (err) {
-                    console.log(" already scraped" + err);
+                    console.log("Job already scraped" + err);
                 }
                 
                 else {
-                    console.log("Scraped  into our DB" + doc);
+                    console.log("Scraped this job into our DB" + doc);
                 }
             });
 
@@ -133,7 +137,7 @@ app.get("/articles/:id", function(req, res) {
 
 
 app.post("/articles/:id", function(req, res) {
-  
+ 
   var newNote = new Note(req.body);
   var currentArticleID = req.params.id;
   
